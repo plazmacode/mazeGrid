@@ -10,7 +10,6 @@ namespace MazeGrid
 {
     public class Cell
     {
-        private int cellSize = 10;
         private Color cellColor = Color.White;
         private Color edgeColor = Color.Black;
         private Vector2 position;

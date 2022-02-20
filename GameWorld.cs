@@ -13,20 +13,15 @@ namespace MazeGrid
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
         private static SpriteFont arial;
-        private static float zoomScale;
-        private static Texture2D pixel;
 
         public static Dictionary<Vector2, Cell> cells = new Dictionary<Vector2, Cell>();
 
         private static bool fullscreen = true;
         private static int cellCount = 80;
-        private static int cellSize = 25;
-
-        private static List<string> debugTexts = new List<string>();
+        private static int cellSize = 50;
 
         private static Vector2 screenSize;
         private static Vector2 oldScreenSize;
-        private static Vector2 cameraPosition;
         private static GameState gameState = GameState.Play;
 
         private static MouseState mouseState;
@@ -35,15 +30,10 @@ namespace MazeGrid
         private static MouseState oldMouseState;
 
         public static Vector2 ScreenSize { get => screenSize; set => screenSize = value; }
-        public static List<string> DebugTexts { get => debugTexts; set => debugTexts = value; }
-        public static SpriteFont Arial { get => arial; set => arial = value; }
         public static Vector2 OldScreenSize { get => oldScreenSize; set => oldScreenSize = value; }
-        public static float ZoomScale { get => zoomScale; set => zoomScale = value; }
-        public static Vector2 CameraPosition { get => cameraPosition; set => cameraPosition = value; }
         public static Dictionary<Vector2, Cell> Cells { get => cells; set => cells = value; }
         internal static GameState GameStateProp { get => gameState; set => gameState = value; }
         public static int CellCount { get => cellCount; set => cellCount = value; }
-        public static KeyboardState KeyStateProp { get => keyState; set => keyState = value; }
         public static MouseState MouseState { get => mouseState; set => mouseState = value; }
         public static MouseState OldMouseState { get => oldMouseState; set => oldMouseState = value; }
         public static int CellSize { get => cellSize; set => cellSize = value; }
@@ -57,7 +47,6 @@ namespace MazeGrid
             Window.ClientSizeChanged += OnResize;
             _graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
             _graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 80;
-
             ScreenSize = new Vector2(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
             _graphics.SynchronizeWithVerticalRetrace = false; //Unlocks FPS
             this.IsFixedTimeStep = false;
@@ -72,8 +61,8 @@ namespace MazeGrid
         protected override void Initialize()
         {
             arial = Content.Load<SpriteFont>("arial");
-            cameraPosition = Vector2.Zero;
 
+            //Maze size based on screenSize / cellSize
             if (fullscreen)
             {
                 for (int y = 0; y <screenSize.Y/CellSize; y++)
@@ -83,7 +72,9 @@ namespace MazeGrid
                         cells.Add(new Vector2(x, y), new Cell(x, y, CellSize));
                     }
                 }
-            } else
+            }
+            //Maze size based on cellCount
+            else
             {
                 for (int y = 0; y < CellCount; y++)
                 {
@@ -94,15 +85,12 @@ namespace MazeGrid
                 }
             }
             
-
             base.Initialize();
         }
 
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            pixel = Content.Load<Texture2D>("pixel");
 
             foreach (Cell c in cells.Values)
             {

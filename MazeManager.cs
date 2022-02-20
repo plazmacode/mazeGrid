@@ -12,25 +12,14 @@ namespace MazeGrid
     {
         private static Random random = new Random();
         private static Thread mazeThread;
-        private static bool isAlive;
-        private static int loop;
-        private static int backs;
-
-        public static int Loop { get => loop; set => loop = value; }
-        public static int Backs { get => backs; set => backs = value; }
+        private static bool isAlive = false;
         
         /// <summary>
         /// Start maze from random point
         /// </summary>
         public static void StartMazeBuild()
         {
-            if (mazeThread == null)
-            {
-                mazeThread = new Thread(BuildMaze);
-                mazeThread.IsBackground = true;
-                mazeThread.Start();
-                isAlive = true;
-            } else if(!isAlive)
+            if(!isAlive)
             {
                 mazeThread = new Thread(BuildMaze);
                 mazeThread.IsBackground = true;
@@ -45,14 +34,7 @@ namespace MazeGrid
         /// <param name="cell"></param>
         public static void StartMazeBuild(Cell cell)
         {
-            if (mazeThread == null)
-            {
-                mazeThread = new Thread(() => BuildMaze(cell));
-                mazeThread.IsBackground = true;
-                mazeThread.Start();
-                isAlive = true;
-            }
-            else if (!isAlive)
+            if (!isAlive)
             {
                 mazeThread = new Thread(() => BuildMaze(cell));
                 mazeThread.IsBackground = true;
@@ -60,10 +42,13 @@ namespace MazeGrid
                 isAlive = true;
             }
         }
-
+        /// <summary>
+        /// Backrack until no more parent to find path between selected cell and maze start cell.
+        /// </summary>
+        /// <param name="goalCell">The cell where the backtracking starts from</param>
         public static void SolveMaze(Cell goalCell)
         {
-            ColorNodes();
+            ColorCells();
             Cell currentCell = goalCell;
             currentCell.CellColor = Color.Green;
             int steps = 0;
@@ -82,23 +67,23 @@ namespace MazeGrid
         public static void BuildMaze()
         {
             //Resets maze, which fixes rerun by rebuilding the wall
-            ColorNodes();
+            ColorCells();
             foreach (Cell cell in GameWorld.Cells.Values)
             {
                 cell.SetRectangles();
             }
+
             List<Node<Vector2>> allNodes = CreateNodes();
             Node<Vector2> currentNode = allNodes[random.Next(0, allNodes.Count)];
             Cell currentCell;
             GameWorld.Cells.TryGetValue(currentNode.Data, out currentCell);
 
             currentCell.MyNode.Discovered = true;
-
             currentCell.CellColor = Color.Red;
+            
             int visited = 0;
             int totalUnvisited = 0;
-            loop = 0;
-            backs = 0;
+
             foreach (Cell cell in GameWorld.Cells.Values)
             {
                 if (!cell.MyNode.Discovered)
@@ -158,31 +143,29 @@ namespace MazeGrid
         public static void BuildMaze(Cell startingCell)
         {
             //Resets maze, which fixes rerun by rebuilding the wall
-            ColorNodes();
+            ColorCells();
             List<Node<Vector2>> allNodes = CreateNodes();
-
+            //Rebuilds the cell walls
             foreach (Cell cell in GameWorld.Cells.Values)
             {
                 cell.SetRectangles();
             }
 
             Cell currentCell = startingCell;
-
             currentCell.MyNode.Discovered = true;
-
             currentCell.CellColor = Color.Red;
-            int visited = 0;
-            int totalUnvisited = 0;
-            loop = 0;
-            backs = 0;
+
+            int discovered = 0;
+            int totalUndiscovered = 0;
+            //Get number of undiscovered cells
             foreach (Cell cell in GameWorld.Cells.Values)
             {
                 if (!cell.MyNode.Discovered)
                 {
-                    totalUnvisited++;
+                    totalUndiscovered++;
                 }
             }
-            while (totalUnvisited > visited)
+            while (totalUndiscovered > discovered)
             {
                 Dictionary<string, Cell> neighbors = Cardinal(currentCell.Position);
                 if (neighbors.Count > 0)
@@ -218,7 +201,7 @@ namespace MazeGrid
 
                     currentCell = neighbor; //Sets currentCell to neighbor
                     currentCell.MyNode.Discovered = true; //Sets the new cell to be discovered
-                    visited++;
+                    discovered++;
                     currentCell.CellColor = Color.White;
 
                 }
@@ -274,9 +257,9 @@ namespace MazeGrid
         }
 
         /// <summary>
-        /// Colors 
+        /// Makes the cells white
         /// </summary>
-        public static void ColorNodes()
+        public static void ColorCells()
         {
             foreach (Cell c in GameWorld.Cells.Values)
             {
@@ -284,6 +267,10 @@ namespace MazeGrid
             }
         }
 
+        /// <summary>
+        /// Creates a list of nodes and adds the node to its cell
+        /// </summary>
+        /// <returns></returns>
         public static List<Node<Vector2>> CreateNodes()
         {
             List<Node<Vector2>> allNodes = new List<Node<Vector2>>();

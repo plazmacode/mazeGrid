@@ -16,6 +16,5 @@ namespace MazeGrid
             this.From = from;
             this.To = to;
         }
-
     }
 }
