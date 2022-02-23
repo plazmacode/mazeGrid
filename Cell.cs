@@ -81,7 +81,7 @@ namespace MazeGrid
             if (background.Contains(Mouse.GetState().Position) && Mouse.GetState().RightButton == ButtonState.Pressed &&
                 GameWorld.OldMouseState.RightButton == ButtonState.Released)
             {
-                MazeManager.SolveMaze(this);
+                MazeManager.StartSolveThread(this);
             }
         }
 

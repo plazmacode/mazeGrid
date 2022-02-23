@@ -18,7 +18,7 @@ namespace MazeGrid
 
         private static bool fullscreen = true;
         private static int cellCount = 80;
-        private static int cellSize = 50;
+        private static int cellSize = 5;
 
         private static Vector2 screenSize;
         private static Vector2 oldScreenSize;

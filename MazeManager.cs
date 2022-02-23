@@ -12,7 +12,9 @@ namespace MazeGrid
     {
         private static Random random = new Random();
         private static Thread mazeThread;
+        private static Thread solveThread;
         private static bool isAlive = false;
+        private static bool isSolving = false;
         
         /// <summary>
         /// Start maze from random point
@@ -42,6 +44,21 @@ namespace MazeGrid
                 isAlive = true;
             }
         }
+
+        /// <summary>
+        /// Start the thread to solve the maze
+        /// </summary>
+        /// <param name="cell"></param>
+        public static void StartSolveThread(Cell cell)
+        {
+            if (!isSolving)
+            {
+                solveThread = new Thread(() => SolveMaze(cell));
+                solveThread.IsBackground = true;
+                solveThread.Start();
+                isSolving = true;
+            }
+        }
         /// <summary>
         /// Backrack until no more parent to find path between selected cell and maze start cell.
         /// </summary>
@@ -54,11 +71,16 @@ namespace MazeGrid
             int steps = 0;
             while (currentCell.MyNode.Parent != null)
             {
+                //for (int i = 0; i < 500000; i++)
+                //{
+                //    int slow = 2 * i;
+                //}
                 steps++;
                 GameWorld.Cells.TryGetValue(currentCell.MyNode.Parent.Data, out currentCell); //Change currentCell to parent
-                currentCell.CellColor = new Color(steps/2+50, steps/50, steps);
+                currentCell.CellColor = new Color(steps/2+50, steps/50, 255-steps/200);
             }
             currentCell.CellColor = Color.Red;
+            isSolving = false;
         }
 
         /// <summary>
@@ -167,6 +189,10 @@ namespace MazeGrid
             }
             while (totalUndiscovered > discovered)
             {
+                //for (int i = 0; i < 50000; i++)
+                //{
+                //    int slow = 2 * i;
+                //}
                 Dictionary<string, Cell> neighbors = Cardinal(currentCell.Position);
                 if (neighbors.Count > 0)
                 {
